@@ -131,19 +131,8 @@ function isCreatePage() {
 }
 
 if ( isCreatePage() ) {
-	const shortlived = param( 'shortlived' );
-	const jetpack = param( 'jetpack' );
-	const woocommerce = param( 'woocommerce' );
-	const features = {};
-	if ( shortlived !== null ) {
-		features.shortlived = shortlived;
-	}
-	if ( jetpack !== null ) {
-		features.jetpack = jetpack;
-	}
-	if ( woocommerce !== null ) {
-		features.woocommerce = woocommerce;
-	}
+	let features = extractFeatures()
+
 	setTimeout( () => {
 		doIt( jQuery, features );
 	}, 1000 );
@@ -165,17 +154,25 @@ if ( isSpecialOpsPage() ) {
 	} )
 }
 
-function param(name) {
-	let params;
-	if ( location.search ) {
-		let params = location.search.split('?')[1].split('&');
-		if ( params.includes( name ) ) {
-			return true;
-		}
-		if ( params.includes( 'no' + name ) ) {
-			return false;
-		}
+function extractFeatures() {
+	if ( !location.search ) {
 		return null;
 	}
-	return null;
+
+	let params = location.search.split('?')[1].split('&');
+	let features = {};
+
+	for (var p of params) {
+		if ( p.includes( '=' ) ) {
+			const splitedParam = p.split( '=' )
+			features[ splitedParam[0] ] = splitedParam[1]
+		} else {
+			if ( p.startsWith( 'no' ) ) {
+				features[ p.slice( 2 ) ] = false
+			} else {
+				features[ p ] = true
+			}
+		}
+	}
+	return features
 }
